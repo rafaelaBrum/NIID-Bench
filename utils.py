@@ -493,6 +493,7 @@ class AddGaussianNoise(object):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
 
 def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_level=0, net_id=None, total=0):
+    global train_dl
     if dataset in ('mnist', 'femnist', 'fmnist', 'cifar10', 'svhn', 'generated', 'covtype', 'a9a', 'rcv1', 'SUSY'):
         if dataset == 'mnist':
             dl_obj = MNIST_truncated
@@ -557,12 +558,28 @@ def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_lev
             transform_train = None
             transform_test = None
 
+        print("Função get_dataloader")
+
+        print("datadir", datadir)
+        print("dataidxs", dataidxs)
+        print("tranform_train", transform_train)
+        print("tranform_test", transform_test)
 
         train_ds = dl_obj(datadir, dataidxs=dataidxs, train=True, transform=transform_train, download=True)
         test_ds = dl_obj(datadir, train=False, transform=transform_test, download=True)
 
+
+        print("train_bs", train_bs)
+        print("test_bs", test_bs)
+
         train_dl = data.DataLoader(dataset=train_ds, batch_size=train_bs, shuffle=True, drop_last=False)
         test_dl = data.DataLoader(dataset=test_ds, batch_size=test_bs, shuffle=False, drop_last=False)
+
+        print("Final da get_dataloader")
+        print("train_ds", train_ds)
+        print("test_ds", test_ds)
+        print("train_dl", train_dl)
+        print("test_dl", test_dl)
 
     return train_dl, test_dl, train_ds, test_ds
 

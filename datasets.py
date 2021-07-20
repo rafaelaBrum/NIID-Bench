@@ -690,14 +690,14 @@ class Generated(MNIST):
         if self.train:
             self.data = np.load("data/generated/X_train.npy")
             self.targets = np.load("data/generated/y_train.npy")
+            print("y_train", self.targets)
         else:
             self.data = np.load("data/generated/X_test.npy")
             self.targets = np.load("data/generated/y_test.npy")            
 
         if self.dataidxs is not None:
             self.data = self.data[self.dataidxs]
-            self.targets = self.targets[self.dataidxs]        
-
+            self.targets = self.targets[self.dataidxs]
 
     def __getitem__(self, index):
         data, target = self.data[index], self.targets[index]
@@ -707,11 +707,11 @@ class Generated(MNIST):
         return len(self.data)
 
 
-
 class genData(MNIST):
     def __init__(self, data, targets):
         self.data = data
         self.targets = targets
+
     def __getitem__(self,index):
         data, target = self.data[index], self.targets[index]
         return data, target

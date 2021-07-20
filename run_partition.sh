@@ -1,9 +1,16 @@
 python partition.py \
+  --model=mlp \
 	--dataset=generated \
+	--alg=fedavg \
+	--lr=0.01 \
 	--batch-size=64 \
+	--epochs=10 \
 	--n_parties=4 \
+	--rho=0.9 \
+	--comm_round=10 \
 	--partition=real \
-	--beta=0.5\
+	--beta=0.5 \
+	--device='cpu' \
 	--datadir='./data/' \
 	--logdir='./logs/' \
 	--noise=0\
@@ -18,7 +25,6 @@ python partition.py \
 #	--batch-size=64 \
 #	--epochs=10 \
 #	--n_parties=4 \
-#	--rho=0.9 \
 #	--comm_round=10 \
 #	--partition=real \
 #	--device='cpu'\
