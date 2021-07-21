@@ -408,6 +408,7 @@ def put_trainable_parameters(net,X):
             params.data.copy_(X[offset:offset+numel].data.view_as(params.data))
         offset+=numel
 
+
 def compute_accuracy(model, dataloader, get_confusion_matrix=False, device="cpu"):
 
     was_training = False

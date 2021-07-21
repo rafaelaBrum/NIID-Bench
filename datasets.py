@@ -690,7 +690,8 @@ class Generated(MNIST):
         if self.train:
             self.data = np.load("data/generated/X_train.npy")
             self.targets = np.load("data/generated/y_train.npy")
-            print("y_train", self.targets)
+            # print("y_train", self.targets)
+            # print("type of y_train", type(self.targets))
         else:
             self.data = np.load("data/generated/X_test.npy")
             self.targets = np.load("data/generated/y_test.npy")            

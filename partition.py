@@ -426,14 +426,29 @@ if __name__ == '__main__':
 
     root_foldername = "data/{}/separated".format(args.dataset)
     mkdirs(root_foldername)
+    n_test = len(y_test)
+    batch_test = n_test//args.n_parties
+    # print("n_Test", n_test)
+    # print("batch_test", batch_test)
     for i in range(args.n_parties):
         foldername = "{}/{}".format(root_foldername, i)
         mkdirs(foldername)
-        pd.DataFrame(X_train[net_dataidx_map[i]]).to_csv("{}/X_train.csv".format(foldername), index=None, header=None)
-        pd.DataFrame(y_train[net_dataidx_map[i]]).to_csv("{}/y_train.csv".format(foldername), index=None, header=None)
+        ini = i * batch_test
+        if (i+1) == args.n_parties:
+            end = n_test
+        else:
+            end = (i+1)*batch_test
+        # print("ini = ", ini, "end = ", end)
+        # print("len", len(X_test[ini:end]))
+        # pd.DataFrame(X_train[net_dataidx_map[i]]).to_csv("{}/X_train.csv".format(foldername), index=None, header=None)
+        np.save("{}/X_train.npy".format(foldername), X_train[net_dataidx_map[i]])
+        np.save("{}/X_test.npy".format(foldername), X_test[ini:end])
+        # pd.DataFrame(y_train[net_dataidx_map[i]]).to_csv("{}/y_train.csv".format(foldername), index=None, header=None)
+        np.save("{}/y_train.npy".format(foldername), y_train[net_dataidx_map[i]])
+        np.save("{}/y_test.npy".format(foldername), y_train[ini:end])
 
-    pd.DataFrame(X_test).to_csv("{}/X_test.csv".format(root_foldername), index=None, header=None)
-    pd.DataFrame(y_test).to_csv("{}/y_test.csv".format(root_foldername), index=None, header=None)
+    # pd.DataFrame(X_test).to_csv("{}/X_test.csv".format(root_foldername), index=None, header=None)
+    # pd.DataFrame(y_test).to_csv("{}/y_test.csv".format(root_foldername), index=None, header=None)
 
     n_classes = len(np.unique(y_train))
 
@@ -515,28 +530,28 @@ if __name__ == '__main__':
             local_train_net(nets, selected, args, net_dataidx_map, test_dl = test_dl_global, device=args.device)
             # # local_train_net(nets, args, net_dataidx_map, local_split=False, device=device)
             #
-            # # update global model
-            # total_data_points = sum([len(net_dataidx_map[r]) for r in selected])
-            # fed_avg_freqs = [len(net_dataidx_map[r]) / total_data_points for r in selected]
-            #
-            # for idx in range(len(selected)):
-            #     net_para = nets[selected[idx]].cpu().state_dict()
-            #     if idx == 0:
-            #         for key in net_para:
-            #             global_para[key] = net_para[key] * fed_avg_freqs[idx]
-            #     else:
-            #         for key in net_para:
-            #             global_para[key] += net_para[key] * fed_avg_freqs[idx]
-            # global_model.load_state_dict(global_para)
-            #
-            # logger.info('global n_training: %d' % len(train_dl_global))
-            # logger.info('global n_test: %d' % len(test_dl_global))
-            #
+            # update global model
+            total_data_points = sum([len(net_dataidx_map[r]) for r in selected])
+            fed_avg_freqs = [len(net_dataidx_map[r]) / total_data_points for r in selected]
+
+            for idx in range(len(selected)):
+                net_para = nets[selected[idx]].cpu().state_dict()
+                if idx == 0:
+                    for key in net_para:
+                        global_para[key] = net_para[key] * fed_avg_freqs[idx]
+                else:
+                    for key in net_para:
+                        global_para[key] += net_para[key] * fed_avg_freqs[idx]
+            global_model.load_state_dict(global_para)
+
+            logger.info('global n_training: %d' % len(train_dl_global))
+            logger.info('global n_test: %d' % len(test_dl_global))
+
             # train_acc = compute_accuracy(global_model, train_dl_global)
-            # test_acc, conf_matrix = compute_accuracy(global_model, test_dl_global, get_confusion_matrix=True)
+            test_acc, conf_matrix = compute_accuracy(global_model, test_dl_global, get_confusion_matrix=True)
             #
             # logger.info('>> Global Model Train accuracy: %f' % train_acc)
-            # logger.info('>> Global Model Test accuracy: %f' % test_acc)
+            logger.info('>> Global Model Test accuracy: %f' % test_acc)
 
     # elif args.alg == 'fedprox':
     #     logger.info("Initializing nets")
