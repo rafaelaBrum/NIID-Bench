@@ -1,3 +1,6 @@
+import gzip
+import zipfile
+
 import torch.utils.data as data
 import torch
 from PIL import Image
@@ -14,7 +17,7 @@ import tarfile
 import os
 import os.path
 import logging
-import torchvision.datasets.utils as utils
+# import torchvision.datasets.utils as utils
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -22,19 +25,21 @@ logger.setLevel(logging.INFO)
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
 
+
 def mkdirs(dirpath):
     try:
         os.makedirs(dirpath)
     except Exception as _:
         pass
 
-def accimage_loader(path):
-    import accimage
-    try:
-        return accimage.Image(path)
-    except IOError:
-        # Potentially a decoding problem, fall back to PIL.Image
-        return pil_loader(path)
+
+# def accimage_loader(path):
+#     import accimage
+#     try:
+#         return accimage.Image(path)
+#     except IOError:
+#         # Potentially a decoding problem, fall back to PIL.Image
+#         return pil_loader(path)
 
 
 def pil_loader(path):
@@ -45,11 +50,13 @@ def pil_loader(path):
 
 
 def default_loader(path):
-    from torchvision import get_image_backend
-    if get_image_backend() == 'accimage':
-        return accimage_loader(path)
-    else:
-        return pil_loader(path)
+    # from torchvision import get_image_backend
+    # if get_image_backend() == 'accimage':
+    #     return accimage_loader(path)
+    # else:
+    #     return pil_loader(path)
+    return pil_loader(path)
+
 
 class CustomTensorDataset(data.TensorDataset):
     def __getitem__(self, index):
@@ -716,5 +723,6 @@ class genData(MNIST):
     def __getitem__(self,index):
         data, target = self.data[index], self.targets[index]
         return data, target
+
     def __len__(self):
         return len(self.data)

@@ -1,0 +1,17 @@
+python partition.py \
+  --model=simple-cnn \
+  --dataset=mnist \
+  --alg=fedavg \
+  --lr=0.01 \
+  --batch-size=64 \
+  --epochs=10 \
+  --n_parties=10 \
+  --rho=0.9 \
+  --comm_round=1 \
+  --partition=homo \
+  --beta=0.5 \
+  --device='cpu' \
+  --datadir='./data/' \
+  --logdir='./logs/' \
+  --noise=0 \
+  --init_seed=0
