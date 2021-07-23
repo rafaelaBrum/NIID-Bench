@@ -574,6 +574,8 @@ def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_lev
         train_ds = dl_obj(datadir, dataidxs=dataidxs, train=True, transform=transform_train, download=True)
         test_ds = dl_obj(datadir, train=False, transform=transform_test, download=True)
 
+        # print("type(data)", type(train_ds))
+        # print("type(target)", type(test_ds))
 
         # print("train_bs", train_bs)
         # print("test_bs", test_bs)
