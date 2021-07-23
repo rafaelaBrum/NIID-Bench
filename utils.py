@@ -45,6 +45,11 @@ def load_mnist_data(datadir):
 
     X_train, y_train = mnist_train_ds.data, mnist_train_ds.target
     X_test, y_test = mnist_test_ds.data, mnist_test_ds.target
+    #
+    # print("type(X_train)", type(X_train))
+    # print("type(y_train)", type(y_train))
+    # print("type(X_test)", type(X_test))
+    # print("type(y_test)", type(y_test))
 
     X_train = X_train.data.numpy()
     y_train = y_train.data.numpy()

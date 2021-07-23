@@ -433,6 +433,10 @@ if __name__ == '__main__':
     # print("y_train", y_train)
     # print("X_test", X_test)
     # print("y_test", y_test)
+    # print("type(X_train)", type(X_train))
+    # print("type(y_train)", type(y_train))
+    # print("type(X_test)", type(X_test))
+    # print("type(y_test)", type(y_test))
     # print("net_dataidx_map", net_dataidx_map)
     # print("traindata_cls_counts", traindata_cls_counts)
 
@@ -460,6 +464,19 @@ if __name__ == '__main__':
             np.save("{}/y_test.npy".format(foldername), y_train[ini:end])
 
     elif args.dataset == 'mnist':
+        transform = transforms.Compose([transforms.ToTensor()])
+
+        mnist_train_ds = MNIST_truncated(args.datadir, train=True, download=True, transform=transform)
+        mnist_test_ds = MNIST_truncated(args.datadir, train=False, download=True, transform=transform)
+
+        X_train, y_train = mnist_train_ds.data, mnist_train_ds.target
+        X_test, y_test = mnist_test_ds.data, mnist_test_ds.target
+
+        print("type(X_train)", type(X_train))
+        print("type(y_train)", type(y_train))
+        print("type(X_test)", type(X_test))
+        print("type(y_test)", type(y_test))
+
         n_test = y_test.shape[0]
 
         testdata_cls_counts = {}
@@ -479,12 +496,17 @@ if __name__ == '__main__':
             foldername = "{}/{}".format(root_foldername, i)
             mkdirs(foldername)
             print(f"created {foldername}")
-            dataset_train = (X_train[net_dataidx_map[i]], y_train[net_dataidx_map[i]])
-            dataset_test = (X_test[net_test_dataidx_map[i]], y_test[net_test_dataidx_map[i]])
+            dataset_train = (X_train[net_dataidx_map[i]].clone(), y_train[net_dataidx_map[i]].clone())
+            dataset_test = (X_test[net_test_dataidx_map[i]].clone(), y_test[net_test_dataidx_map[i]].clone())
             with open(os.path.join(foldername, 'training.pt'), 'wb') as f:
                 torch.save(dataset_test, f)
             with open(os.path.join(foldername, 'test.pt'), 'wb') as f:
                 torch.save(dataset_test, f)
+
+        X_train = X_train.data.numpy()
+        y_train = y_train.data.numpy()
+        X_test = X_test.data.numpy()
+        y_test = y_test.data.numpy()
 
     n_classes = len(np.unique(y_train))
 
@@ -531,63 +553,63 @@ if __name__ == '__main__':
     #     test_all_in_ds = data.ConcatDataset(test_all_in_list)
     #     test_dl_global = data.DataLoader(dataset=test_all_in_ds, batch_size=32, shuffle=False)
 
-    # if args.alg == 'fedavg':
-    #     logger.info("Initializing nets")
-    #     nets, local_model_meta_data, layer_type = init_nets(args.net_config, args.dropout_p, args.n_parties, args)
-    #     global_models, global_model_meta_data, global_layer_type = init_nets(args.net_config, 0, 1, args)
-    #     global_model = global_models[0]
-    #
-    #     # print("nets", nets)
-    #     # print("local_model_meta_data", local_model_meta_data)
-    #     # print("layer_type", layer_type)
-    #
-    #     global_para = global_model.state_dict()
-    #     if args.is_same_initial:
-    #         for net_id, net in nets.items():
-    #             net.load_state_dict(global_para)
-    #
-    #     # for round in range(args.comm_round):
-    #     for round in range(1):
-    #         logger.info("in comm round:" + str(round))
-    #
-    #         arr = np.arange(args.n_parties)
-    #         np.random.shuffle(arr)
-    #         selected = arr[:int(args.n_parties * args.sample)]
-    #
-    #         global_para = global_model.state_dict()
-    #         if round == 0:
-    #             if args.is_same_initial:
-    #                 for idx in selected:
-    #                     nets[idx].load_state_dict(global_para)
-    #         else:
-    #             for idx in selected:
-    #                 nets[idx].load_state_dict(global_para)
-    #
-    #         local_train_net(nets, selected, args, net_dataidx_map, test_dl = test_dl_global, device=args.device)
-    #         # # local_train_net(nets, args, net_dataidx_map, local_split=False, device=device)
-    #         #
-    #         # update global model
-    #         total_data_points = sum([len(net_dataidx_map[r]) for r in selected])
-    #         fed_avg_freqs = [len(net_dataidx_map[r]) / total_data_points for r in selected]
-    #
-    #         for idx in range(len(selected)):
-    #             net_para = nets[selected[idx]].cpu().state_dict()
-    #             if idx == 0:
-    #                 for key in net_para:
-    #                     global_para[key] = net_para[key] * fed_avg_freqs[idx]
-    #             else:
-    #                 for key in net_para:
-    #                     global_para[key] += net_para[key] * fed_avg_freqs[idx]
-    #         global_model.load_state_dict(global_para)
-    #
-    #         logger.info('global n_training: %d' % len(train_dl_global))
-    #         logger.info('global n_test: %d' % len(test_dl_global))
-    #
-    #         # train_acc = compute_accuracy(global_model, train_dl_global)
-    #         test_acc, conf_matrix = compute_accuracy(global_model, test_dl_global, get_confusion_matrix=True)
-    #         #
-    #         # logger.info('>> Global Model Train accuracy: %f' % train_acc)
-    #         logger.info('>> Global Model Test accuracy: %f' % test_acc)
+    if args.alg == 'fedavg':
+        logger.info("Initializing nets")
+        nets, local_model_meta_data, layer_type = init_nets(args.net_config, args.dropout_p, args.n_parties, args)
+        global_models, global_model_meta_data, global_layer_type = init_nets(args.net_config, 0, 1, args)
+        global_model = global_models[0]
+
+        # print("nets", nets)
+        # print("local_model_meta_data", local_model_meta_data)
+        # print("layer_type", layer_type)
+
+        global_para = global_model.state_dict()
+        if args.is_same_initial:
+            for net_id, net in nets.items():
+                net.load_state_dict(global_para)
+
+        # for round in range(args.comm_round):
+        for round in range(1):
+            logger.info("in comm round:" + str(round))
+
+            arr = np.arange(args.n_parties)
+            np.random.shuffle(arr)
+            selected = arr[:int(args.n_parties * args.sample)]
+
+            global_para = global_model.state_dict()
+            if round == 0:
+                if args.is_same_initial:
+                    for idx in selected:
+                        nets[idx].load_state_dict(global_para)
+            else:
+                for idx in selected:
+                    nets[idx].load_state_dict(global_para)
+
+            local_train_net(nets, selected, args, net_dataidx_map, test_dl = test_dl_global, device=args.device)
+            # # local_train_net(nets, args, net_dataidx_map, local_split=False, device=device)
+            #
+            # update global model
+            total_data_points = sum([len(net_dataidx_map[r]) for r in selected])
+            fed_avg_freqs = [len(net_dataidx_map[r]) / total_data_points for r in selected]
+
+            for idx in range(len(selected)):
+                net_para = nets[selected[idx]].cpu().state_dict()
+                if idx == 0:
+                    for key in net_para:
+                        global_para[key] = net_para[key] * fed_avg_freqs[idx]
+                else:
+                    for key in net_para:
+                        global_para[key] += net_para[key] * fed_avg_freqs[idx]
+            global_model.load_state_dict(global_para)
+
+            logger.info('global n_training: %d' % len(train_dl_global))
+            logger.info('global n_test: %d' % len(test_dl_global))
+
+            # train_acc = compute_accuracy(global_model, train_dl_global)
+            test_acc, conf_matrix = compute_accuracy(global_model, test_dl_global, get_confusion_matrix=True)
+            #
+            # logger.info('>> Global Model Train accuracy: %f' % train_acc)
+            logger.info('>> Global Model Test accuracy: %f' % test_acc)
 
     # elif args.alg == 'fedprox':
     #     logger.info("Initializing nets")

@@ -106,6 +106,9 @@ class MNIST_truncated(data.Dataset):
         """
         img, target = self.data[index], self.target[index]
 
+        # print("img", img)
+        # print("type(img)", type(img))
+
         # doing this so that it is consistent with all other datasets
         # to return a PIL Image
         img = Image.fromarray(img.numpy(), mode='L')
